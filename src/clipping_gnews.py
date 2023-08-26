@@ -1,6 +1,4 @@
-import requests
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 import streamlit as st
 import time
 from datetime import datetime, timedelta
@@ -58,15 +56,26 @@ def parse_custom_time(time_str):
         except ValueError:
             return datetime(2000, 1, 1)
 
+def should_ignore(article):
+    try:
+        # Finds the element that holds the name of the source.
+        # We ignore news from Zimbra, because it gives only unwanted spam.
+        return article.find_element('css selector', "article > div > div > a").text == "Zimbra"
+    except:
+        return False
+    return False
+
 def scrape_news(driver, news_count):
     articles = []
     
-    html_articles = driver.find_elements(By.CSS_SELECTOR, "article")
+    html_articles = driver.find_elements('css selector', "article")
     
     for i, article in enumerate(html_articles[:news_count]):
-        title = article.find_element(By.CSS_SELECTOR, "article > h3 > a").text
-        time = article.find_element(By.CSS_SELECTOR, "article > div > div > time").text
-        url = article.find_element(By.CSS_SELECTOR, "article > h3 > a").get_attribute("href")
+        if (should_ignore(article)):
+            continue
+        title = article.find_element('css selector', "article > h3 > a").text
+        time = article.find_element('css selector', "article > div > div > time").text
+        url = article.find_element('css selector', "article > h3 > a").get_attribute("href")
         articles.append({"title": title, "url": url, "time": time})
     return articles
 
