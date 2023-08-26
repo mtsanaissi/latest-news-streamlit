@@ -86,10 +86,10 @@ def main():
     news_source = "https://news.google.com/search?q=%22guar%C3%A1%22+bras%C3%ADlia&hl=pt-BR&gl=BR"
 
     # Create a Selenium driver.
-    driver = webdriver.Edge()
-    edge_options = webdriver.EdgeOptions()
-    edge_options.use_webview = True
-    edge_options.add_argument('--headless=new')
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.use_webview = True
+    chrome_options.add_argument('--headless')
+    driver = webdriver.Chrome(options=chrome_options)
 
     driver.get(news_source)
 
