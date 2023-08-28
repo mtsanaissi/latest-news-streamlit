@@ -1,32 +1,7 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 import streamlit as st
 import time
 from datetime import datetime, timedelta
-
-# Set selenium driver options
-options = Options()
-options.add_argument('--disable-gpu')
-options.add_argument('--headless')
-
-def get_driver():
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
-# Create a Selenium driver.
-driver = get_driver()
-
-# Define the news source we want to track and get the driver there.
-news_source = "https://news.google.com/search?q=%22guar%C3%A1%22+bras%C3%ADlia&hl=pt-BR&gl=BR"
-driver.get(news_source)
-
-# Scroll down to the bottom of the page to load more news.
-loads = 0
-while loads < 1:
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(1)
-    loads += 1
 
 # Mapping of month abbreviations to month numbers
 month_mapping = {
@@ -107,7 +82,24 @@ def scrape_news(driver, news_count):
 
 # Create a Streamlit app to display the news.
 def main():
-    
+    # Set selenium driver options
+    options = webdriver.FirefoxOptions()
+    options.add_argument('--disable-gpu')
+    options.add_argument('--headless')
+
+    # Create a Selenium driver.
+    driver = webdriver.Firefox(options=options)
+
+    # Define the news source we want to track and get the driver there.
+    news_source = "https://news.google.com/search?q=%22guar%C3%A1%22+bras%C3%ADlia&hl=pt-BR&gl=BR"
+    driver.get(news_source)
+
+    # Scroll down to the bottom of the page to load more news.
+    loads = 0
+    while loads < 1:
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(1)
+        loads += 1
 
     news_max = 20
     articles = scrape_news(driver, news_max)
