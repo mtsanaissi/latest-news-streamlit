@@ -2,6 +2,7 @@ from selenium import webdriver
 import streamlit as st
 import time
 from datetime import datetime, timedelta
+import urllib.parse
 
 # Mapping of month abbreviations to month numbers
 month_mapping = {
@@ -63,7 +64,6 @@ def should_ignore(article):
         return article.find_element('css selector', "article > div > div > a").text == "Zimbra"
     except:
         return False
-    return False
 
 def scrape_news(driver, news_count):
     articles = []
@@ -79,7 +79,6 @@ def scrape_news(driver, news_count):
         articles.append({"title": title, "url": url, "time": time})
     return articles
 
-
 # Create a Streamlit app to display the news.
 def main():
     # Set selenium driver options
@@ -90,27 +89,36 @@ def main():
     # Create a Selenium driver.
     driver = webdriver.Firefox(options=options)
 
-    # Define the news source we want to track and get the driver there.
-    news_source = "https://news.google.com/search?q=%22guar%C3%A1%22+bras%C3%ADlia&hl=pt-BR&gl=BR"
-    driver.get(news_source)
+    if 'search_text' not in st.session_state:
+        st.session_state.search_text = ''
 
-    # Scroll down to the bottom of the page to load more news.
-    loads = 0
-    while loads < 1:
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(1)
-        loads += 1
+    st.markdown("### Quero as últimas notícias sobre...")
+    st.session_state.search_text = st.text_input("Assunto", key="search_text_input", placeholder="Especifique um assunto aqui", label_visibility="collapsed")
+    st.session_state.search_text = urllib.parse.quote(st.session_state.search_text)
 
-    news_max = 20
-    articles = scrape_news(driver, news_max)
-    articles.sort(key=lambda x: parse_custom_time(x['time']), reverse=True)
+    st.button('Pesquisar')
 
-    st.title("Notícias do Guará-DF")
+    # Check if search_text is not null and not empty
+    if st.session_state.search_text is not None and len(st.session_state.search_text.strip()) > 0:
+        # Define the news source we want to track and get the driver there.
+        news_source = f"https://news.google.com/search?q={st.session_state.search_text}&hl=pt-BR&gl=BR"
+        driver.get(news_source)
 
-    for article in articles:
-        st.write(f"{article['time']} - [{article['title']}]({article['url']})")
-    
-    driver.quit()
+        # Scroll down to the bottom of the page to load more news.
+        loads = 0
+        while loads < 1:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(1)
+            loads += 1
+
+        news_max = 20
+        articles = scrape_news(driver, news_max)
+        articles.sort(key=lambda x: parse_custom_time(x['time']), reverse=True)
+
+        for article in articles:
+            st.write(f"{article['time']} - [{article['title']}]({article['url']})")
+        
+        driver.quit()
 
 if __name__ == "__main__":
     main()

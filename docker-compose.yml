@@ -4,5 +4,5 @@ services:
       ports:
           - 8501:8501
       volumes:
-          - ./data/:/data/
+          - .:/usr/src/app
       privileged: true
